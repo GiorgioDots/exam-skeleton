@@ -1,6 +1,6 @@
 {
-  "DB_HOST": "eu-cdbr-west-03.cleardb.net",
-  "DB_NAME": "heroku_21875a02aa3238b",
-  "DB_USER": "bb883a7c2f4b87",
-  "DB_PASSWORD": "735f9ece"
+  "DB_HOST": "remotemysql.com:3306",
+  "DB_NAME": "xLaQNEZiDF",
+  "DB_USER": "xLaQNEZiDF",
+  "DB_PASSWORD": "DL8sOVqQeP"
 }
