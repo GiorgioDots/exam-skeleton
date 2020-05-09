@@ -61,7 +61,7 @@ $evHandler = new EventHandler();
                   $evHandler->onCreateTables();
                   break;
                 case "populate_tables":
-                  $evHandler->onPopulateTables(1000);
+                  $evHandler->onPopulateTables(100);
                   break;
                 case "query":
                   $sql = $_POST["query"];
