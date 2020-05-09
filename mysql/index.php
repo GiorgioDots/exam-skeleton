@@ -28,7 +28,7 @@ class MySQLDriver
   {
     $queries = array(
       "
-        CREATE TABLE IF NOT EXISTS Actor(
+        CREATE TABLE IF NOT EXISTS actor(
           actor_id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
           surname TEXT NOT NULL, 
           name TEXT NOT NULL, 
@@ -38,7 +38,7 @@ class MySQLDriver
         )
       ",
       "
-        CREATE TABLE IF NOT EXISTS Film(
+        CREATE TABLE IF NOT EXISTS film(
           film_id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
           title TEXT NOT NULL, 
           production_year INT, 
@@ -48,7 +48,7 @@ class MySQLDriver
         )
       ",
       "
-        CREATE TABLE IF NOT EXISTS Cinema(
+        CREATE TABLE IF NOT EXISTS cinema(
           cinema_id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
           name TEXT NOT NULL, 
           seats INT NOT NULL,
@@ -56,7 +56,7 @@ class MySQLDriver
         )
       ",
       "
-        CREATE TABLE IF NOT EXISTS Interprets(
+        CREATE TABLE IF NOT EXISTS interprets(
           actor_id_fk INT(11) UNSIGNED NOT NULL,
           film_id_fk INT(11) UNSIGNED NOT NULL,
           `character` TEXT NOT NULL,
@@ -64,16 +64,16 @@ class MySQLDriver
           PRIMARY KEY(actor_id_fk, film_id_fk),
 
           FOREIGN KEY (actor_id_fk)
-            REFERENCES Actor(actor_id)
+            REFERENCES actor(actor_id)
             ON UPDATE CASCADE ON DELETE RESTRICT,
           FOREIGN KEY (film_id_fk)
-            REFERENCES Film(film_id)
+            REFERENCES film(film_id)
             ON UPDATE CASCADE ON DELETE RESTRICT
 
         )
       ",
       "
-        CREATE TABLE IF NOT EXISTS Planned(
+        CREATE TABLE IF NOT EXISTS planned(
           film_id_fk INT(11) UNSIGNED NOT NULL,
           cinema_id_fk INT(11) UNSIGNED NOT NULL,
           takings INT NOT NULL, 
@@ -82,10 +82,10 @@ class MySQLDriver
           PRIMARY KEY(cinema_id_fk, film_id_fk),
 
           FOREIGN KEY (film_id_fk)
-            REFERENCES Film(film_id)
+            REFERENCES film(film_id)
             ON UPDATE CASCADE ON DELETE RESTRICT,
           FOREIGN KEY (cinema_id_fk)
-            REFERENCES Cinema(cinema_id) 
+            REFERENCES cinema(cinema_id) 
             ON UPDATE CASCADE ON DELETE RESTRICT
         )
       ",
@@ -133,20 +133,26 @@ class MySQLDriver
   private function populateActors($numRows)
   {
     $genders = array('male', 'female'); // Non per offendere altri generi
-    $sql = "";
+    $values = "";
     for ($i = 0; $i < $numRows; $i++) {
       $name = $this->names[array_rand($this->names)];
       $surname = $this->surnames[array_rand($this->surnames)];
       $gender = $genders[array_rand($genders, 1)];
       $birthday = $this->generateRandomDate();
       $nationality = $this->nations[array_rand($this->nations)];
-      $sql = "INSERT INTO `actor`(`surname`, `name`, `gender`, `birthday`, `nationality`) VALUES ('$surname', '$name', '$gender', '$birthday', '$nationality');";
-      $this->connection->query($sql);
+      if($i == $numRows-1){
+        $values = "$values ('$surname', '$name', '$gender', '$birthday', '$nationality');";
+      }else{
+        $values = "$values ('$surname', '$name', '$gender', '$birthday', '$nationality'),";
+      }
     }
+    $sql = "INSERT INTO `actor`(`surname`, `name`, `gender`, `birthday`, `nationality`) VALUES $values";
+    $this->connection->query($sql);
   }
 
   private function populateFilm($numRows)
   {
+    $values = "";
     for ($i = 0; $i < $numRows; $i++) {
       $film = $this->films[array_rand($this->films)];
       $title = $film["title"];
@@ -159,64 +165,79 @@ class MySQLDriver
       } else {
         $genre = "Adventure";
       }
-      $sql = "INSERT INTO `film`(`title`, `production_year`, `production_place`, `director_surname`, `genre`) VALUES ('$title', '$prodYear', '$prodPlace', '$dirSurname', '$genre')";
-      $this->connection->query($sql);
+      if($i == $numRows-1){
+        $values = "$values ('$title', '$prodYear', '$prodPlace', '$dirSurname', '$genre');";
+      }else{
+        $values = "$values ('$title', '$prodYear', '$prodPlace', '$dirSurname', '$genre'),";
+      }
     }
+    $sql = "INSERT INTO `film`(`title`, `production_year`, `production_place`, `director_surname`, `genre`) VALUES $values";
+    $this->connection->query($sql);
   }
 
   private function populateCinema($numRows)
   {
+    $values = "";
     for ($i = 0; $i < $numRows; $i++) {
       $name = $this->surnames[array_rand($this->surnames)];
       $seats = rand(50, 300);
       $city = $this->cities[array_rand($this->cities)];
-      $sql = "INSERT INTO `cinema`(`name`, `seats`, `city`) VALUES ('$name','$seats','$city')";
-      $this->connection->query($sql);
+      if($i == $numRows-1){
+        $values = "$values ('$name','$seats','$city');";
+      }else{
+        $values = "$values ('$name','$seats','$city'),";
+      }
     }
+    $sql = "INSERT INTO `cinema`(`name`, `seats`, `city`) VALUES $values";
+    $this->connection->query($sql);
   }
 
   private function populateInterprets($numRows)
   {
-    for ($k = 0; $k < $numRows; $k++) {
-      $fetchActorsQuery = "SELECT actor_id FROM actor";
-      $actors = $this->connection->query($fetchActorsQuery);
-      $max = rand(1, $actors->num_rows);
-      for ($i = 0; $i < $max; $i++) {
-        $actor = $actors->fetch_assoc();
-      }
-      $fetchFilmQuery = "SELECT film_id FROM film";
-      $films = $this->connection->query($fetchFilmQuery);
-      $max = rand(1, $films->num_rows);
-      for ($i = 0; $i < $max; $i++) {
-        $film = $films->fetch_assoc();
-      }
+    $fetchActorsQuery = "SELECT actor_id FROM actor";
+    $actors = $this->connection->query($fetchActorsQuery);
+    $fetchFilmQuery = "SELECT film_id FROM film";
+    $films = $this->connection->query($fetchFilmQuery);
+    $actors = $actors->fetch_all(MYSQLI_ASSOC);
+    $films = $films->fetch_all(MYSQLI_ASSOC);
+    $values = "";
+    for ($i = 0; $i < $numRows; $i++) {
+      $actor = $actors[array_rand($actors)];
+      $film = $films[array_rand($films)];
       $name = $this->names[array_rand($this->names)];
       $surname = $this->surnames[array_rand($this->surnames)];
-      $sql = "INSERT INTO `interprets`(`actor_id_fk`, `film_id_fk`, `character`) VALUES ({$actor['actor_id']}, {$film['film_id']}, '$name $surname')";
-      $this->connection->query($sql);
+      if($i == $numRows-1){
+        $values = "$values ({$actor['actor_id']}, {$film['film_id']}, '$name $surname');";
+      }else{
+        $values = "$values ({$actor['actor_id']}, {$film['film_id']}, '$name $surname'),";
+      }
     }
+    $sql = "INSERT INTO `interprets`(`actor_id_fk`, `film_id_fk`, `character`) VALUES $values";
+    $this->connection->query($sql);
   }
 
   private function populatePlanner($numRows)
   {
-    for ($k = 0; $k < $numRows; $k++) {
-      $fetchCinemasQuery = "SELECT cinema_id FROM cinema";
-      $cinemas = $this->connection->query($fetchCinemasQuery);
-      $max = rand(1, $cinemas->num_rows);
-      for ($i = 0; $i < $max; $i++) {
-        $cinema = $cinemas->fetch_assoc();
-      }
-      $fetchFilmQuery = "SELECT film_id FROM film";
-      $films = $this->connection->query($fetchFilmQuery);
-      $max = rand(1, $films->num_rows);
-      for ($i = 0; $i < $max; $i++) {
-        $film = $films->fetch_assoc();
-      }
+    $fetchCinemasQuery = "SELECT cinema_id FROM cinema";
+    $cinemas = $this->connection->query($fetchCinemasQuery);
+    $fetchFilmQuery = "SELECT film_id FROM film";
+    $films = $this->connection->query($fetchFilmQuery);
+    $cinemas = $cinemas->fetch_all(MYSQLI_ASSOC);
+    $films = $films->fetch_all(MYSQLI_ASSOC);
+    $values = "";
+    for ($i = 0; $i < $numRows; $i++) {
+      $cinema = $cinemas[array_rand($cinemas)];
+      $film = $films[array_rand($films)];
       $takings = rand(1000000, 1000000000);
       $projectionDate = $this->generateRandomDate();
-      $sql = "INSERT INTO `planned`(`film_id_fk`, `cinema_id_fk`, `takings`, `projection_date`) VALUES ({$film['film_id']},{$cinema['cinema_id']},$takings, '$projectionDate')";
-      $this->connection->query($sql);
+      if($i == $numRows-1){
+        $values = "$values ({$film['film_id']},{$cinema['cinema_id']},$takings, '$projectionDate');";
+      }else{
+        $values = "$values ({$film['film_id']},{$cinema['cinema_id']},$takings, '$projectionDate'),";
+      }
     }
+    $sql = "INSERT INTO `planned`(`film_id_fk`, `cinema_id_fk`, `takings`, `projection_date`) VALUES $values";
+    $this->connection->query($sql);
   }
 
   private function generateRandomDate()

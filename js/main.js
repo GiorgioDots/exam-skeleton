@@ -27,12 +27,12 @@ function onChangeQuery(action) {
   switch (action) {
     case 'query1':
       let query1 = `
-        SELECT film.director_surname, actor.name, actor.surname, actor.actor_id, interprets.character, COUNT(*) as times\n
+        SELECT film.director_surname as 'Director Surname', actor.name as 'Actor Name', actor.surname as 'Actor Surname', actor.actor_id, interprets.character, COUNT(*) as times\n
         FROM interprets, actor, film\n
         WHERE\n
           actor.actor_id = interprets.actor_id_fk AND\n
           film.film_id = interprets.film_id_fk\n
-        GROUP BY film.director_surname, actor.actor_id\n
+        GROUP BY film.director_surname, actor.actor_id, interprets.character\n
         ORDER BY times DESC
       `;
       insertQueryDiv.innerHTML = `
