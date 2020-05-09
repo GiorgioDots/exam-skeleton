@@ -130,6 +130,10 @@ class MySQLDriver
     return $result->fetch_all(MYSQLI_ASSOC);
   }
 
+  public function deleteTables(){
+    $this->connection->query("DROP TABLE IF EXISTS `actor`, `cinema`, `film`, `interprets`, `planned` CASCADE;");
+  }
+
   private function populateActors($numRows)
   {
     $genders = array('male', 'female'); // Non per offendere altri generi

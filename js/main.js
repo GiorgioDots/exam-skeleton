@@ -15,10 +15,10 @@ function onSelectAction(action) {
       </select>
     `;
     insertQueryDiv.innerHTML = `
-      <input type="text" class="form-control" name="query" placeholder="Insert a query">
+      <textarea class="form-control" name="query" placeholder="Insert a query"></textarea>
     `;
     insertQueryDiv.className = 'form-group';
-    selectQueryDiv.className = 'form-group mr-sm-3';
+    selectQueryDiv.className = 'form-group mr-3';
   }
 }
 
@@ -78,7 +78,7 @@ function onChangeQuery(action) {
       break;
     default:
       insertQueryDiv.innerHTML = `
-        <input type="text" class="form-control" name="query" placeholder="Insert a query">
+        <textarea class="form-control" name="query" placeholder="Insert a query"></textarea>
       `;
   }
 }

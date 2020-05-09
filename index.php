@@ -39,15 +39,18 @@ $evHandler = new EventHandler();
           <div class="col">
             <label for="action">Select an action</label>
             <div class="form-inline">
-              <div class="form-group mr-sm-3">
+              <div class="form-group mr-3">
                 <select class="form-control" id="action" name="action" onchange="onSelectAction(this.value)">
                   <option value="create_tables">Create Tables</option>
                   <option value="populate_tables">Populate Tables</option>
+                  <option value="delete_tables">Delete Tables</option>
                   <option value="query">Query</option>
                 </select>
               </div>
               <div id="selectQueryDiv"></div>
-              <button class="btn btn-outline-secondary mr-sm-3" type="submit">Execute</button>
+              <div class="form-group">
+                <button class="btn btn-outline-secondary mr-3" type="submit">Execute</button>
+              </div>
             </div>
           </div>
         </div>
@@ -74,6 +77,8 @@ $evHandler = new EventHandler();
                 ";
                   $evHandler->onExecuteQuery($sql);
                   break;
+                case "delete_tables":
+                  $evHandler->onDeleteTables();
               }
             } else {
               $sql = "SELECT * FROM actor";
